@@ -78,7 +78,7 @@ export default function RootLayout({
               '@context': 'https://schema.org',
               '@type': 'WebApplication',
               name: APP_NAME,
-              alternateName: '1Click共テ対策',
+              alternateName: '1Clickでおべんきょう',
               url: SITE_URL,
               description: APP_DESCRIPTION,
               applicationCategory: 'EducationApplication',

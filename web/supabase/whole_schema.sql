@@ -1,5 +1,5 @@
 -- ============================================================
--- 1Click共テ対策  Supabase スキーマ 初期とmigration統合版
+-- 1Clickでおべんきょう  Supabase スキーマ 初期とmigration統合版
 -- supabase/schema.sql
 --
 -- Supabaseの SQL Editor にこの内容を貼り付けて実行する。

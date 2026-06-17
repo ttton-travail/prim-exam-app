@@ -30,7 +30,7 @@ export default function MaintenancePage() {
             <h1 style={{ fontSize: '22px', fontWeight: 700, margin: '0 0 12px' }}>
                 かたてスト
                 <span style={{ fontSize: '0.7em', marginLeft: '0.4em', whiteSpace: 'nowrap' }}>
-                    1Click共テ対策
+                    1Clickでおべんきょう
                 </span>
             </h1>
             <p style={{ fontSize: '16px', color: '#6b7280', margin: 0, lineHeight: 1.7 }}>
