@@ -1,5 +1,5 @@
 # exam-app
-AI-powered exam practice app for Japanese elementary school students.
+Exam practice app for Japanese elementary school students.
 
 ## Overview
 問題をランダム生成する小学生向け学習アプリ。
