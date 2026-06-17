@@ -34,11 +34,11 @@ export const GEMINI_TEMPERATURE = 1
 // -----------------------------------------------
 // アプリ情報
 // -----------------------------------------------
-export const APP_NAME = 'かたてスト -小学生社会版-'
+export const APP_NAME = 'かたてスト -小学校版-'
 // ブラウザタブ・検索結果・OGP用のフルタイトル（アプリ名＋副題、中黒区切り）。
 // ※ 画面ロゴ横の副題（labels.app.subtitle）は装飾用で別物。
-export const APP_TITLE_FULL = 'かたてスト -小学生社会版-｜都道府県・県庁所在地・地方・特産品の4択クイズ'
-export const APP_DESCRIPTION = 'かたてスト -小学生社会版-｜都道府県・県庁所在地・地方・特産品・東京23区を地図とあわせて学べる、小学生向け社会の4択クイズアプリ'
+export const APP_TITLE_FULL = 'かたてスト -小学校版-｜都道府県・県庁所在地・地方・特産品の4択クイズ'
+export const APP_DESCRIPTION = 'かたてスト -小学校版-｜都道府県・県庁所在地・地方・特産品・東京23区を地図とあわせて学べる、小学生向け社会の4択クイズアプリ'
 // 本番URL（OGP・canonical・sitemap で使用）。末尾スラッシュなし。
 // ※ 別ドメイン／サブドメインを取得したら差し替える（暫定で本体ドメインを指定）。
 export const SITE_URL = 'https://katatest.ttton-notty.com'
@@ -132,10 +132,10 @@ export const ENABLE_SHARE_BUTTONS = true
 export const SHARE_MOBILE_URL = ''   // スマホ版公開後にURLを設定（空なら本文に出さない）
 // 汎用タグ（検索流入用）とブランドタグ（指名・集約用）を分けて、本文では改行で区切る
 export const SHARE_HASHTAGS = ['小学生', '社会', '都道府県', '学習アプリ']
-export const SHARE_BRAND_HASHTAGS = ['かたてスト', '小学生社会版', 'TtLab', 'ととらぼ']
+export const SHARE_BRAND_HASHTAGS = ['かたてスト', '小学校版', 'TtLab', 'ととらぼ']
 export function buildShareText(pageUrl: string): string {
     const lines = [
-        'かたてスト -小学生社会版-',
+        'かたてスト -小学校版-',
         '都道府県・県庁所在地・地方・特産品を地図で楽しく4択クイズ',
         '',
         '▼Web版',

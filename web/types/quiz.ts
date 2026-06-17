@@ -30,7 +30,7 @@ export interface Question {
     explanation: string
     keywords: string[]  // 復習の手がかり。回答時に「キーワード：〜」で表示
     /**
-     * 地図ハイライト用メタ（小学生社会版）。地図出題のときだけ入る。
+     * 地図ハイライト用メタ（小学校版）。地図出題のときだけ入る。
      * 地図UIが対象（県/地方/区）の mapNo を data-* で塗り分けるのに使う。
      */
     mapKind?: 'pref' | 'region' | 'ward'

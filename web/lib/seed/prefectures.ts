@@ -1,5 +1,5 @@
 // ===========================
-// マスタ seed データ（小学生社会版）
+// マスタ seed データ（小学校版）
 // lib/seed/prefectures.ts
 //
 // Supabase prim_prefectures / prim_regions / prim_wards に対応。

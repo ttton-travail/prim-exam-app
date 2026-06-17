@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
         // ============================================================
 
         if (mode === 'stock') {
-            // 【マスタ生成モード（小学生社会版の主経路）】
+            // 【マスタ生成モード（小学校版の主経路）】
             //   固定問題を持たず、DBのマスタ（県・地方・区）から quizgen が毎回4択を組む。
             //   DB未接続・失敗時は getMasterData が seed にフォールバックする。
             const masters = await getMasterData()
