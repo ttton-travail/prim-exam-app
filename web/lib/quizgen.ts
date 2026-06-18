@@ -2,7 +2,7 @@
 // 問題生成（マスタ → 4択）
 // lib/quizgen.ts
 //
-// 小学校版：固定問題を持たず、マスタ（県・地方・区）から毎回4択を組む。
+// 小学生社会版：固定問題を持たず、マスタ（県・地方・区）から毎回4択を組む。
 // 各 questionType ごとに「正解1 + ランダム誤答3」を作り、既存の Question 型で返す。
 // → 出力は QuizScreen / ResultScreen をそのまま流用できる。
 //
@@ -39,8 +39,9 @@ interface BuildArgs {
     explanation: string
     keywords: string[]
     /** 地図ハイライト用（任意）：対象の種類と番号。地図UIが使う。 */
-    mapKind?: 'pref' | 'region' | 'ward'
+    mapKind?: 'pref' | 'region' | 'ward' | 'pref-shape'
     mapNo?: number
+    mapHighlight?: boolean
 }
 
 let __qid = 1
@@ -63,6 +64,7 @@ function build(a: BuildArgs): Question {
         keywords: a.keywords,
         mapKind: a.mapKind,
         mapNo: a.mapNo,
+        mapHighlight: a.mapHighlight,
     }
 }
 
@@ -82,7 +84,112 @@ function specialtyText(p: Prefecture): string {
 
 /** 県の「県＋県庁」「県＋特産」等のセット表記。正しい組／誤った組を作る基礎。 */
 function setText(parts: string[]): string {
-    return parts.join(' ＝ ')
+    return parts.join(' - ')
+}
+
+/**
+ * ダミー県庁所在地を作る。
+ * 「県名 ≠ 県庁名」の県について、「[県名の頭]市」という“ひっかけ”を返す。
+ *   例：愛知県 → 愛知市 ／ 神奈川県 → 神奈川市 ／ 青森県 → null（青森市が本物）
+ * 県名そのまま＋市 が本物の県庁になる県（青森・千葉・京都市 など）は null。
+ * ・このダミーは「その県自身」とのペアでのみ誤答に使う（他県とは組ませない）。
+ */
+function dummyCapital(p: Prefecture): string | null {
+    // 県名から末尾の「都/道/府/県」を外した頭部
+    const head = p.name.replace(/[都道府県]$/, '')
+    const dummy = `${head}市`
+    // 本物の県庁と一致するならダミーにならない
+    return dummy === p.capital ? null : dummy
+}
+
+/** ダミー県庁を持つ県（県名≠県庁名）の一覧 */
+function prefsWithDummy(prefs: Prefecture[]): Prefecture[] {
+    return prefs.filter((p) => dummyCapital(p) !== null)
+}
+
+// ============================================================
+// 組み合わせ問題の共通ジェネレータ
+//   ・4択すべてが「県 - ○○」のペア。県も相手もランダムにバラける。
+//   ・正解＝正しい組。誤答＝相手がその県のものではない“誤った組”。
+//   ・県庁が絡む組では、誤答に必ず1つ「ダミーペア（ダミー元県 - その県のダミー県庁）」を入れる。
+//     （ダミーは正解の県と無関係でよい。例：正解が岐阜県-岐阜市でも 愛知県-愛知市 を入れてよい）
+// ============================================================
+
+/** ペアの種類：県庁を相手にするか／特産品を相手にするか／両方か。 */
+type PairKind = 'capital' | 'specialty' | 'capital_specialty'
+
+/** 1つの県から、その種類の「正しい相手テキスト」を作る。 */
+function rightPartner(p: Prefecture, kind: PairKind): string {
+    if (kind === 'capital') return p.capital
+    if (kind === 'specialty') return specialtyText(p)
+    return `${p.capital} - ${specialtyText(p)}`
+}
+
+/** 県名（または地図番号）を左側ラベルにする。地図モードなら「【n】」表記。 */
+function leftLabel(p: Prefecture, useMap: boolean): string {
+    // 地図モードでも県名を併記する（「地図 - 県 - ○○」の“県”が欠落しないように）。
+    //   useMap=true  → 「【23】愛知県」
+    //   useMap=false → 「愛知県」
+    return useMap ? `【${p.mapNo}】${p.name}` : p.name
+}
+
+/**
+ * 組み合わせ4択を作る。
+ *   correctP … 正解の県（左側）
+ *   kind     … 相手の種類
+ *   useMap   … 左ラベルを地図番号にするか
+ * 戻り値：correct/wrongs（setText 済み文字列）
+ */
+function buildPairChoices(
+    correctP: Prefecture,
+    kind: PairKind,
+    useMap: boolean,
+    prefectures: Prefecture[],
+): { correct: string; wrongs: string[] } {
+    const correct = setText([leftLabel(correctP, useMap), rightPartner(correctP, kind)])
+    const used = new Set<string>([correct])
+    const wrongs: string[] = []
+
+    const involvesCapital = (kind === 'capital' || kind === 'capital_specialty')
+
+    // ① 県庁が絡むなら、誤答1枠を必ずダミーペアにする。
+    if (involvesCapital) {
+        const dummyPrefs = shuffle(prefsWithDummy(prefectures))
+        for (const dp of dummyPrefs) {
+            const dummy = dummyCapital(dp)
+            if (!dummy) continue
+            const partner = kind === 'capital_specialty'
+                ? `${dummy} - ${specialtyText(dp)}`
+                : dummy
+            const text = setText([leftLabel(dp, useMap), partner])
+            if (used.has(text)) continue
+            wrongs.push(text)
+            used.add(text)
+            break
+        }
+    }
+
+    // ② 残りの誤答：県も相手もランダム。ただし“正しい組”にはしない。
+    const pool = shuffle(prefectures)
+    let gi = 0
+    while (wrongs.length < 3 && gi < pool.length * 6) {
+        const lp = pool[gi % pool.length]
+        const rp = pool[(gi * 7 + 3) % pool.length]
+        gi++
+        if (lp.id === rp.id) continue            // 同じ県＝正しい組なので不可
+        const partner = rightPartner(rp, kind)
+        if (kind === 'specialty') {
+            const lset = new Set(lp.specialties)
+            if (rp.specialties.some((s) => lset.has(s))) continue  // 特産品が左の県とも一致＝正解化
+        }
+        if (involvesCapital && partner.startsWith(lp.capital)) continue  // 県庁が左の県の正解
+        const text = setText([leftLabel(lp, useMap), partner])
+        if (used.has(text)) continue
+        wrongs.push(text)
+        used.add(text)
+    }
+
+    return { correct, wrongs: wrongs.slice(0, 3) }
 }
 
 // ============================================================
@@ -129,6 +236,7 @@ export function generateQuestions(
                     explanation: `地図の${p.mapNo}番は「${p.name}」です。`,
                     keywords: [p.name, p.nameKana],
                     mapKind: 'pref', mapNo: p.mapNo,
+                    mapHighlight: true,
                 }))
             }
             break
@@ -148,6 +256,45 @@ export function generateQuestions(
                     explanation: `「${p.name}」は地図の${p.mapNo}番です。`,
                     keywords: [p.name, p.nameKana],
                     mapKind: 'pref', mapNo: p.mapNo,
+                    mapHighlight: true,
+                }))
+            }
+            break
+        }
+
+        case 'pref_shape_to_name': {
+            // 県の形（個別SVG）→ 県名。地図種別 'pref-shape' で対象県の形だけを表示する。
+            for (const p of takePrefs(count)) {
+                out.push(build({
+                    unitId, unitLabel,
+                    question: `この形の都道府県はどれでしょう？`,
+                    correct: p.name,
+                    wrongs: pickWrong(allPrefNames, new Set([p.name]), 3),
+                    explanation: `この形は「${p.name}」です。`,
+                    keywords: [p.name, p.nameKana],
+                    mapKind: 'pref-shape', mapNo: p.mapNo,
+                    mapHighlight: true,
+                }))
+            }
+            break
+        }
+
+        case 'pref_name_to_shape': {
+            // 県名 → 県の形。選択肢は各県の地図番号（形を4枚並べてUI側で表示）。
+            for (const p of takePrefs(count)) {
+                const wrongNos = pickWrong(
+                    PREFECTURES.map((x) => String(x.mapNo)),
+                    new Set([String(p.mapNo)]), 3,
+                )
+                out.push(build({
+                    unitId, unitLabel,
+                    question: `「${p.name}」の形はどれでしょう？`,
+                    correct: `${p.mapNo}番`,
+                    wrongs: wrongNos.map((n) => `${n}番`),
+                    explanation: `「${p.name}」の形は${p.mapNo}番です。`,
+                    keywords: [p.name, p.nameKana],
+                    mapKind: 'pref-shape', mapNo: p.mapNo,
+                    mapHighlight: true,
                 }))
             }
             break
@@ -163,6 +310,7 @@ export function generateQuestions(
                     explanation: `地図${p.mapNo}番は「${p.name}」、県庁所在地は「${p.capital}」です。`,
                     keywords: [p.name, p.capital, p.capitalKana],
                     mapKind: 'pref', mapNo: p.mapNo,
+                    mapHighlight: true,
                 }))
             }
             break
@@ -182,16 +330,37 @@ export function generateQuestions(
             break
         }
 
-        case 'pref_capital_set': {
-            // 正しい「県＝県庁」の組を1つ、誤った組を3つ（県は正解と同じ、県庁を他県のものに）
+        case 'capital_name_to_map': {
+            // 県庁所在地名 → その県の地図番号（地図上で県をハイライト）
             for (const p of takePrefs(count)) {
-                const wrongCaps = pickWrong(allCapitals, new Set([p.capital]), 3)
+                const wrongNos = pickWrong(
+                    PREFECTURES.map((x) => String(x.mapNo)),
+                    new Set([String(p.mapNo)]), 3,
+                )
                 out.push(build({
                     unitId, unitLabel,
-                    question: `「${p.name}」と県庁所在地の正しい組み合わせはどれでしょう？`,
-                    correct: setText([p.name, p.capital]),
-                    wrongs: wrongCaps.map((c) => setText([p.name, c])),
-                    explanation: `正しい組み合わせは「${p.name} ＝ ${p.capital}」です。`,
+                    question: `県庁所在地「${p.capital}」は地図のどの番号でしょう？`,
+                    correct: `${p.mapNo}番`,
+                    wrongs: wrongNos.map((n) => `${n}番`),
+                    explanation: `県庁所在地「${p.capital}」は「${p.name}」、地図の${p.mapNo}番です。`,
+                    keywords: [p.capital, p.name, p.capitalKana],
+                    mapKind: 'pref', mapNo: p.mapNo,
+                    mapHighlight: true,
+                }))
+            }
+            break
+        }
+
+        case 'pref_capital_set': {
+            // 4択すべて「県 - 県庁」。県も県庁もランダム。誤答に必ずダミーペア1つ。
+            for (const p of takePrefs(count)) {
+                const { correct, wrongs } = buildPairChoices(p, 'capital', false, PREFECTURES)
+                out.push(build({
+                    unitId, unitLabel,
+                    question: `県と県庁所在地の正しい組み合わせはどれでしょう？`,
+                    correct,
+                    wrongs,
+                    explanation: `正しい組み合わせは「${p.name} - ${p.capital}」です。`,
                     keywords: [p.name, p.capital],
                 }))
             }
@@ -199,16 +368,18 @@ export function generateQuestions(
         }
 
         case 'pref_map_capital_set': {
+            // 左ラベルを地図番号にして、地図 - 県庁 のペアをランダム化。誤答に必ずダミー。
             for (const p of takePrefs(count)) {
-                const wrongCaps = pickWrong(allCapitals, new Set([p.capital]), 3)
+                const { correct, wrongs } = buildPairChoices(p, 'capital', true, PREFECTURES)
                 out.push(build({
                     unitId, unitLabel,
-                    question: `地図の【${p.mapNo}】の県と県庁所在地の正しい組み合わせはどれでしょう？`,
-                    correct: setText([p.name, p.capital]),
-                    wrongs: wrongCaps.map((c) => setText([p.name, c])),
+                    question: `地図の番号と県庁所在地の正しい組み合わせはどれでしょう？`,
+                    correct,
+                    wrongs,
                     explanation: `地図${p.mapNo}番は「${p.name}」、県庁所在地は「${p.capital}」です。`,
                     keywords: [p.name, p.capital],
                     mapKind: 'pref', mapNo: p.mapNo,
+                    mapHighlight: false,
                 }))
             }
             break
@@ -235,16 +406,14 @@ export function generateQuestions(
         }
 
         case 'pref_specialty_set': {
+            // 4択すべて「県 - 特産品」。県も特産品もランダム。正しい組にならない誤答3つ。
             for (const p of takePrefs(count)) {
-                const correctSet = new Set(p.specialties)
-                const wrongPrefs = shuffle(
-                    PREFECTURES.filter((x) => x.id !== p.id && !x.specialties.some((s) => correctSet.has(s))),
-                ).slice(0, 3)
+                const { correct, wrongs } = buildPairChoices(p, 'specialty', false, PREFECTURES)
                 out.push(build({
                     unitId, unitLabel,
-                    question: `「${p.name}」と特産品の正しい組み合わせはどれでしょう？`,
-                    correct: setText([p.name, specialtyText(p)]),
-                    wrongs: wrongPrefs.map((x) => setText([p.name, specialtyText(x)])),
+                    question: `県と特産品の正しい組み合わせはどれでしょう？`,
+                    correct,
+                    wrongs,
                     explanation: `「${p.name}」の特産品は「${specialtyText(p)}」です。`,
                     keywords: [p.name, ...p.specialties],
                 }))
@@ -254,37 +423,31 @@ export function generateQuestions(
 
         case 'pref_map_specialty_set': {
             for (const p of takePrefs(count)) {
-                const correctSet = new Set(p.specialties)
-                const wrongPrefs = shuffle(
-                    PREFECTURES.filter((x) => x.id !== p.id && !x.specialties.some((s) => correctSet.has(s))),
-                ).slice(0, 3)
+                const { correct, wrongs } = buildPairChoices(p, 'specialty', true, PREFECTURES)
                 out.push(build({
                     unitId, unitLabel,
-                    question: `地図の【${p.mapNo}】の県と特産品の正しい組み合わせはどれでしょう？`,
-                    correct: setText([p.name, specialtyText(p)]),
-                    wrongs: wrongPrefs.map((x) => setText([p.name, specialtyText(x)])),
+                    question: `地図の番号と特産品の正しい組み合わせはどれでしょう？`,
+                    correct,
+                    wrongs,
                     explanation: `地図${p.mapNo}番「${p.name}」の特産品は「${specialtyText(p)}」です。`,
                     keywords: [p.name, ...p.specialties],
                     mapKind: 'pref', mapNo: p.mapNo,
+                    mapHighlight: false,
                 }))
             }
             break
         }
 
         case 'pref_capital_specialty_set': {
+            // 「県 - 県庁 - 特産品」。県庁が絡むので誤答に必ずダミーペア。
             for (const p of takePrefs(count)) {
-                const correctSet = new Set(p.specialties)
-                const wrongPrefs = shuffle(
-                    PREFECTURES.filter((x) => x.id !== p.id
-                        && x.capital !== p.capital
-                        && !x.specialties.some((s) => correctSet.has(s))),
-                ).slice(0, 3)
+                const { correct, wrongs } = buildPairChoices(p, 'capital_specialty', false, PREFECTURES)
                 out.push(build({
                     unitId, unitLabel,
-                    question: `「${p.name}」の県庁所在地と特産品の正しい組み合わせはどれでしょう？`,
-                    correct: setText([p.name, p.capital, specialtyText(p)]),
-                    wrongs: wrongPrefs.map((x) => setText([p.name, x.capital, specialtyText(x)])),
-                    explanation: `「${p.name}」＝県庁所在地「${p.capital}」、特産品「${specialtyText(p)}」です。`,
+                    question: `県・県庁所在地・特産品の正しい組み合わせはどれでしょう？`,
+                    correct,
+                    wrongs,
+                    explanation: `「${p.name}」 - 県庁所在地「${p.capital}」 - 特産品「${specialtyText(p)}」です。`,
                     keywords: [p.name, p.capital, ...p.specialties],
                 }))
             }
@@ -293,20 +456,16 @@ export function generateQuestions(
 
         case 'pref_map_capital_specialty_set': {
             for (const p of takePrefs(count)) {
-                const correctSet = new Set(p.specialties)
-                const wrongPrefs = shuffle(
-                    PREFECTURES.filter((x) => x.id !== p.id
-                        && x.capital !== p.capital
-                        && !x.specialties.some((s) => correctSet.has(s))),
-                ).slice(0, 3)
+                const { correct, wrongs } = buildPairChoices(p, 'capital_specialty', true, PREFECTURES)
                 out.push(build({
                     unitId, unitLabel,
-                    question: `地図の【${p.mapNo}】の県・県庁所在地・特産品の正しい組み合わせはどれでしょう？`,
-                    correct: setText([p.name, p.capital, specialtyText(p)]),
-                    wrongs: wrongPrefs.map((x) => setText([p.name, x.capital, specialtyText(x)])),
-                    explanation: `地図${p.mapNo}番「${p.name}」＝県庁所在地「${p.capital}」、特産品「${specialtyText(p)}」です。`,
+                    question: `地図の番号・県庁所在地・特産品の正しい組み合わせはどれでしょう？`,
+                    correct,
+                    wrongs,
+                    explanation: `地図${p.mapNo}番「${p.name}」 - 県庁所在地「${p.capital}」 - 特産品「${specialtyText(p)}」です。`,
                     keywords: [p.name, p.capital, ...p.specialties],
                     mapKind: 'pref', mapNo: p.mapNo,
+                    mapHighlight: false,
                 }))
             }
             break
@@ -322,6 +481,7 @@ export function generateQuestions(
                     explanation: `色のついた地方は「${r.name}」です。`,
                     keywords: [r.name, r.nameKana],
                     mapKind: 'region', mapNo: r.mapNo,
+                    mapHighlight: true,
                 }))
             }
             break
@@ -341,6 +501,7 @@ export function generateQuestions(
                     explanation: `「${r.name}」は地図の${r.mapNo}番です。`,
                     keywords: [r.name, r.nameKana],
                     mapKind: 'region', mapNo: r.mapNo,
+                    mapHighlight: true,
                 }))
             }
             break
@@ -389,6 +550,7 @@ export function generateQuestions(
                     explanation: `地図${w.mapNo}番は「${w.name}」です。`,
                     keywords: [w.name, w.nameKana],
                     mapKind: 'ward', mapNo: w.mapNo,
+                    mapHighlight: true,
                 }))
             }
             break
@@ -408,6 +570,7 @@ export function generateQuestions(
                     explanation: `「${w.name}」は地図の${w.mapNo}番です。`,
                     keywords: [w.name, w.nameKana],
                     mapKind: 'ward', mapNo: w.mapNo,
+                    mapHighlight: true,
                 }))
             }
             break

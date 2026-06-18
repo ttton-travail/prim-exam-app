@@ -7,6 +7,7 @@ import { styles, labels } from '@/lib/design'
 import { displayKey } from '@/lib/shuffle'
 import { useResponsive } from '@/lib/useBreakpoint'
 import type { Question, AnswerMap, ChoiceId } from '@/types/quiz'
+import JapanMap from '@/components/JapanMap'
 
 interface Props {
   questions: Question[]
@@ -55,6 +56,27 @@ export default function QuizScreen({
 
         {/** 問題文 */}
         <p style={{ ...styles.questionText, fontSize: r.bodySize }}>{q.question}</p>
+
+        {/** 地図（地図系の出題のみ）。
+             ・単独出題（mapHighlight=true）… 対象を強調して「これは何？」と問う。
+             ・組み合わせ出題（mapHighlight=false）… 参照用に全番号を表示（強調しない）。
+             ・県の形（pref-shape）… その県の形だけを表示。 */}
+        {q.mapKind && (
+          <div style={{ margin: '0 auto 16px', maxWidth: 420 }}>
+            <JapanMap
+              kind={q.mapKind === 'pref' ? 'prefecture' : q.mapKind}
+              highlightMapNo={
+                q.mapKind === 'pref-shape'
+                  ? q.mapNo
+                  : q.mapHighlight
+                    ? q.mapNo
+                    : undefined
+              }
+              mode="active"
+              maxWidth={420}
+            />
+          </div>
+        )}
 
         {/** 選択肢（表示キーは位置から振る。データ上のIDで選択判定） */}
         <div style={{ ...styles.choiceList, gap: r.choiceGap }}>

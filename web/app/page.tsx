@@ -42,8 +42,10 @@ export default function LandingPage() {
         }
     }, [])
 
-    // 対応科目は科目マスターの enabled から動的生成（科目追加時の二重管理を防ぐ）
-    const enabledSubjects = SUBJECTS.filter((s) => s.enabled)
+    // 対応項目は科目マスターの enabled から動的生成（科目追加時の二重管理を防ぐ）。
+    // ただし LP に画像（LP_SUBJECT_IMAGES）が無い項目は出さない。
+    // → 「組み合わせ（advanced）」は画像を持たないため LP の対応項目から自動的に除外される。
+    const enabledSubjects = SUBJECTS.filter((s) => s.enabled && LP_SUBJECT_IMAGES[s.id])
 
     // ヒーロー用パネル：上端・左右を画面端まで（角丸なし・全幅・上余白なし）。
     // 下だけ余白を残し、中身は内側で幅制限する。

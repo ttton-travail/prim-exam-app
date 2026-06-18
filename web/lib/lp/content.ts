@@ -24,11 +24,13 @@ export const LP_IMAGES = {
 // 対応科目カードのイメージ画像（科目id → 画像パス）。
 // 正方形イメージを public/assets/lp/subjects/ に配置する。
 export const LP_SUBJECT_IMAGES: Record<string, string> = {
-    info1: '/assets/lp/subjects/info.svg',
-    phys_base: '/assets/lp/subjects/phys.svg',
-    chem_base: '/assets/lp/subjects/chem.svg',
-    bio_base: '/assets/lp/subjects/bio.svg',
-    earth_base: '/assets/lp/subjects/earth.svg',
+    // 項目id（lib/subjects.ts の Subject.id）→ 科目カード画像。
+    // ※「組み合わせ（advanced）」はLPの対応項目に出さないため画像を持たない。
+    prefecture: '/assets/lp/subjects/prefecture.svg', // 都道府県
+    capital: '/assets/lp/subjects/city.svg',          // 県庁所在地
+    specialty: '/assets/lp/subjects/spec.svg',        // 特産品
+    region: '/assets/lp/subjects/region.svg',         // 地方
+    ward: '/assets/lp/subjects/tokyo.svg',            // 東京23区
 }
 
 // ---- LP用 文言 ----

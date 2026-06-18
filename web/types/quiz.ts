@@ -30,11 +30,18 @@ export interface Question {
     explanation: string
     keywords: string[]  // 復習の手がかり。回答時に「キーワード：〜」で表示
     /**
-     * 地図ハイライト用メタ（小学校版）。地図出題のときだけ入る。
+     * 地図ハイライト用メタ（小学生社会版）。地図出題のときだけ入る。
      * 地図UIが対象（県/地方/区）の mapNo を data-* で塗り分けるのに使う。
      */
-    mapKind?: 'pref' | 'region' | 'ward'
+    mapKind?: 'pref' | 'region' | 'ward' | 'pref-shape'
     mapNo?: number
+    /**
+     * 地図上で mapNo を強調表示するか。
+     *   true  … 単独出題（例：地図→名前）。対象を強調して「これは何？」と問う。
+     *   false … 組み合わせ出題。地図は参照用（全番号表示）で、正解を強調しない
+     *           （強調すると答えがばれるため）。
+     */
+    mapHighlight?: boolean
 }
 
 /** 問題セット（APIレスポンス＝内部形式） */
@@ -83,9 +90,12 @@ export type QuestionType =
     // --- 都道府県 ---
     | 'pref_map_to_name'      // 地図（番号）→ 県名
     | 'pref_name_to_map'      // 県名 → 地図（番号）
+    | 'pref_shape_to_name'    // 県の形（個別SVG）→ 県名
+    | 'pref_name_to_shape'    // 県名 → 県の形（個別SVG）
     // --- 県庁所在地 ---
     | 'capital_map_to_name'   // 地図（番号）→ 県庁所在地
     | 'pref_to_capital'       // 県名 → 県庁所在地
+    | 'capital_name_to_map'   // 県庁所在地名 → 地図（その県の番号）
     // --- 特産品 ---
     | 'pref_to_specialty'     // 県名 → 特産品
     // --- 発展（組み合わせ系） ---

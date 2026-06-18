@@ -29,6 +29,8 @@ export const SUBJECTS: Subject[] = [
         units: [
             { id: 'pref_map_to_name', label: '地図→名前', questionType: 'pref_map_to_name', supportsAll: true },
             { id: 'pref_name_to_map', label: '名前→地図', questionType: 'pref_name_to_map', supportsAll: true },
+            { id: 'pref_shape_to_name', label: '県の形→名前', questionType: 'pref_shape_to_name', supportsAll: true },
+            { id: 'pref_name_to_shape', label: '名前→県の形', questionType: 'pref_name_to_shape', supportsAll: true },
         ],
     },
 
@@ -41,6 +43,7 @@ export const SUBJECTS: Subject[] = [
         units: [
             { id: 'capital_map_to_name', label: '地図→名前', questionType: 'capital_map_to_name', supportsAll: true },
             { id: 'pref_to_capital', label: '都道府県→県庁所在地', questionType: 'pref_to_capital', supportsAll: true },
+            { id: 'capital_name_to_map', label: '名前→地図', questionType: 'capital_name_to_map', supportsAll: true },
         ],
     },
 
