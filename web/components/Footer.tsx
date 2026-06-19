@@ -251,7 +251,7 @@ function ContactBlock() {
                                 style={styles.contactLink}
                             >
                                 {c.icon && <BrandIcon name={c.icon} size={16} title={c.label} />}
-                                <span>{c.label}</span>
+                                <span style={{ textDecoration: 'underline' }}>{c.label}</span>
                             </a>
                         ))}
                         <ContactEmail />
@@ -390,7 +390,8 @@ const styles: Record<string, React.CSSProperties> = {
         alignItems: 'center',
         gap: design.spacing.xs,
         fontSize: design.font.sizeSm,
-        color: design.color.primary,
+        // メール表示（contactText）と同じ色に揃える。下線はテキスト側にだけ付ける。
+        color: design.color.textSecondary,
         textDecoration: 'none',
     },
     contactText: {
