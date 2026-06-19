@@ -24,6 +24,9 @@ import type { NewsItem } from '@/lib/news'
 export default function LandingPage() {
     const { bp } = useResponsive()
     const isNarrow = bp === 'mobile' // スマホは縦積み
+    // 使い方セクションは、画像を大きくする都合上タブレットでも横並びだと窮屈になるため、
+    // mobile / tablet では縦積み（画像→下に3STEP）にし、desktop でのみ横並びにする。
+    const stackUsage = bp !== 'desktop'
 
     // お知らせ（News）は Supabase の news テーブルを /api/news 経由で取得する。
     // 取得失敗時は空配列のまま（リスト領域は出るが行は0件）でLPは壊れない。
@@ -255,20 +258,34 @@ export default function LandingPage() {
                 <div
                     style={{
                         display: 'flex',
-                        flexDirection: isNarrow ? 'column' : 'row',
+                        flexDirection: stackUsage ? 'column' : 'row',
                         gap: design.spacing.lg,
-                        alignItems: 'center',
+                        alignItems: stackUsage ? 'center' : 'stretch',
                     }}
                 >
-                    {/* 画面例画像（設定＋結果を1枚にまとめたもの）。左ブロック内いっぱいに広げて大きく見せる */}
-                    <div style={{ flex: 1.5, width: '100%', minWidth: 0 }}>
+                    {/* 画面例画像（設定＋結果を1枚にまとめたもの）。
+                        PC（横並び）では右の3STEPカード全体と同じ高さになるよう、列いっぱいに広げて
+                        height:100% で揃える。画面が狭いときは画像→下に3STEPの縦積みにする。 */}
+                    <div
+                        style={{
+                            flex: stackUsage ? 'none' : 2,
+                            width: '100%',
+                            minWidth: 0,
+                            display: 'flex',
+                            justifyContent: 'center',
+                        }}
+                    >
                         <img
                             src={lpContent.usage.image.src}
                             alt={lpContent.usage.image.alt}
                             style={{
-                                width: '100%',
-                                maxWidth: '580px',
-                                height: 'auto',
+                                // 横並び時：高さを列（=3STEP全体）に合わせ、幅は比率なりに自動。
+                                // 縦積み時：幅基準で大きく見せる。
+                                height: stackUsage ? 'auto' : '100%',
+                                width: stackUsage ? '100%' : 'auto',
+                                maxWidth: stackUsage ? '720px' : '100%',
+                                maxHeight: stackUsage ? 'none' : '100%',
+                                objectFit: 'contain',
                                 margin: '0 auto',
                                 display: 'block',
                                 borderRadius: '0',
@@ -276,8 +293,8 @@ export default function LandingPage() {
                             }}
                         />
                     </div>
-                    {/* 3ステップ（各STEPを個別パネルに） */}
-                    <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: design.spacing.md }}>
+                    {/* 3ステップ（各STEPを個別パネルに）。PCでは列幅を狭めて画像を大きく見せる。 */}
+                    <div style={{ flex: stackUsage ? 'none' : 1, width: '100%', maxWidth: stackUsage ? '100%' : '300px', display: 'flex', flexDirection: 'column', gap: design.spacing.md }}>
                         {lpContent.usage.steps.map((s, i) => (
                             <div
                                 key={i}
