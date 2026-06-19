@@ -49,8 +49,8 @@ export const APP_NAME = 'かたてスト -小学校版-'
 export const APP_TITLE_FULL = 'かたてスト -小学校版-｜都道府県・県庁所在地・地方・特産品の4択クイズ'
 export const APP_DESCRIPTION = 'かたてスト -小学校版-｜都道府県・県庁所在地・地方・特産品・東京23区を地図とあわせて学べる、小学生向け社会の4択クイズアプリ'
 // 本番URL（OGP・canonical・sitemap で使用）。末尾スラッシュなし。
-// ※ 別ドメイン／サブドメインを取得したら差し替える（暫定で本体ドメインを指定）。
-export const SITE_URL = 'https://katatest.ttton-notty.com'
+// ※ 小学校版（prim）の本番ドメイン。高校版（katatest）とは別サブドメインなので混同しないこと。
+export const SITE_URL = 'https://katatest-prim.ttton-notty.com'
 // SEO用キーワード（検索流入を狙う語）。metadata.keywords に渡す。
 export const SEO_KEYWORDS = [
     'かたてスト', '小学生 社会', '小学 社会', '社会 クイズ', '都道府県 クイズ',
@@ -145,7 +145,7 @@ export const SHARE_BRAND_HASHTAGS = ['かたてスト', '小学校版', 'TtLab',
 export function buildShareText(pageUrl: string): string {
     const lines = [
         'かたてスト -小学校版-',
-        '都道府県・県庁所在地・地方・特産品を、かたてでサクサクお勉強！',
+        '都道府県・県庁所在地・地方・特産品を地図で楽しく4択クイズ',
         '',
         '▼Web版',
         pageUrl,
