@@ -145,7 +145,7 @@ export const SHARE_BRAND_HASHTAGS = ['かたてスト', '小学校版', 'TtLab',
 export function buildShareText(pageUrl: string): string {
     const lines = [
         'かたてスト -小学校版-',
-        '都道府県・県庁所在地・地方・特産品を地図で楽しく4択クイズ',
+        '都道府県・県庁所在地・地方・特産品を、かたてでサクサクお勉強！',
         '',
         '▼Web版',
         pageUrl,
