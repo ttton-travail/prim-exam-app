@@ -302,7 +302,7 @@ export default function LandingPage() {
                                     background: design.color.surface,
                                     borderRadius: design.radius.md,
                                     boxShadow: design.shadow.md,
-                                    padding: `${design.spacing.md} ${design.spacing.lg}`,
+                                    padding: `${design.spacing.md} ${design.spacing.md}`,
                                     boxSizing: 'border-box',
                                 }}
                             >
@@ -320,7 +320,7 @@ export default function LandingPage() {
                                 >
                                     {s.no}
                                 </span>
-                                <p style={{ ...typography.subText, fontSize: design.font.sizeMd, color: design.color.textPrimary, whiteSpace: 'pre-line', margin: `${design.spacing.xs} 0 0` }}>
+                                <p style={{ ...typography.subText, fontSize: design.font.sizeMd, color: design.color.textPrimary, whiteSpace: 'pre-line', wordBreak: 'keep-all', margin: `${design.spacing.xs} 0 0` }}>
                                     <Furigana text={s.text} />
                                 </p>
                             </div>
