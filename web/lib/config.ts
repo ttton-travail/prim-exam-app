@@ -170,9 +170,9 @@ export function buildShareText(pageUrl: string): string {
 // -----------------------------------------------
 // 端末ごと（localStorage）の1日あたり新規AI生成の上限回数。
 // ストックからの配信はカウントしない（無料・無制限）。
-export const DAILY_GEN_LIMIT_PER_DEVICE = 15
+export const DAILY_GEN_LIMIT_PER_DEVICE = 10
 // 全体（サーバー側）の1日あたり新規AI生成の上限。コスト暴走・悪意あるアクセスの歯止め。
-// 想定：15回 × 100人規模でも収まる範囲。利用状況に応じて調整する。
+// 想定：10回 × 100人規模でも収まる範囲。利用状況に応じて調整する。
 export const DAILY_GEN_LIMIT_GLOBAL = 2000
 // -----------------------------------------------
 // 広告（Google AdSense）

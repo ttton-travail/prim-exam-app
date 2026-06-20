@@ -161,6 +161,10 @@ export async function saveQuestionsToStock(
  * 全体の1日生成上限をチェックし、未超過なら1カウントして true を返す。
  * service_role が無い／エラー時は安全側に倒して true（生成を止めない）。
  * 端末ごとの回数制限は別途クライアント側(localStorage)で行う。
+ *
+ * Supabaseは全アプリ共通DBのため、集計を分けられるよう app='prim' を明示で渡す
+ * （daily_usage.app に 'prim' として記録）。戻り値 count はその日の全アプリ合計で、
+ * これを全体上限と比較する（同じGeminiキーDB＝同じ予算を共有するため合計で判定）。
  */
 export async function checkAndIncrementDailyUsage(
     dailyLimit: number,
@@ -168,7 +172,7 @@ export async function checkAndIncrementDailyUsage(
     const admin = getServiceClient()
     if (!admin) return { allowed: true, count: 0 }
 
-    const { data, error } = await admin.rpc('increment_daily_usage')
+    const { data, error } = await admin.rpc('increment_daily_usage', { p_app: 'prim' })
     if (error) {
         console.error('[stock] usageカウントエラー', error.message)
         return { allowed: true, count: 0 }
