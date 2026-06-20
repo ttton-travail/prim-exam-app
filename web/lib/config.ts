@@ -36,22 +36,23 @@ export const GEMINI_TEMPERATURE = 1
 // -----------------------------------------------
 // 系列アプリ識別キー（お知らせの表示対象フィルタに使う）。
 // news テーブルの apps 列（text[]）にこのキーを含む行だけを表示する。
-// ・prim（この小学校版）  … 'prim'
+// ・prim（この小学生版）  … 'prim'
 // ・exam-app（高校版）    … 'exam-app'
 // 値はデプロイ環境ごとに環境変数 NEXT_PUBLIC_APP_KEY で上書きする。
 // 同じコードを系列アプリで使い回す前提なので、識別子はコードではなく環境側に持つ。
 // 未設定時はこのアプリの既定値 'prim' にフォールバックする。
 export const APP_KEY = process.env.NEXT_PUBLIC_APP_KEY ?? 'prim'
 
-export const APP_NAME = 'かたてスト -小学校版-'
+export const APP_NAME = 'かたてスト -小学生版-'
 // PWA（ホーム画面追加）やiOS用の短い名前。アイコン下に出るので簡潔に。
-export const APP_SHORT_NAME = 'かたてスト'
+// ※ 系列の別版（共テ版）とホーム画面で見分けられるよう、版名込みにする。
+export const APP_SHORT_NAME = 'かたてスト 小学生版'
 // ブラウザタブ・検索結果・OGP用のフルタイトル（アプリ名＋副題、中黒区切り）。
 // ※ 画面ロゴ横の副題（labels.app.subtitle）は装飾用で別物。
-export const APP_TITLE_FULL = 'かたてスト -小学校版-｜都道府県・県庁所在地・地方・特産品の4択クイズ'
-export const APP_DESCRIPTION = 'かたてスト -小学校版-｜都道府県・県庁所在地・地方・特産品・東京23区を地図とあわせて学べる、小学生向け社会の4択クイズアプリ'
+export const APP_TITLE_FULL = 'かたてスト -小学生版-｜都道府県・県庁所在地・地方・特産品の4択クイズ'
+export const APP_DESCRIPTION = 'かたてスト -小学生版-｜都道府県・県庁所在地・地方・特産品・東京23区を地図とあわせて学べる、小学生向け社会の4択クイズアプリ'
 // 本番URL（OGP・canonical・sitemap で使用）。末尾スラッシュなし。
-// ※ 小学校版（prim）の本番ドメイン。高校版（katatest）とは別サブドメインなので混同しないこと。
+// ※ 小学生版（prim）の本番ドメイン。高校版（katatest）とは別サブドメインなので混同しないこと。
 export const SITE_URL = 'https://katatest-prim.ttton-notty.com'
 // SEO用キーワード（検索流入を狙う語）。metadata.keywords に渡す。
 export const SEO_KEYWORDS = [
@@ -143,10 +144,10 @@ export const ENABLE_SHARE_BUTTONS = true
 export const SHARE_MOBILE_URL = ''   // スマホ版公開後にURLを設定（空なら本文に出さない）
 // 汎用タグ（検索流入用）とブランドタグ（指名・集約用）を分けて、本文では改行で区切る
 export const SHARE_HASHTAGS = ['小学生', '社会', '都道府県', '学習アプリ']
-export const SHARE_BRAND_HASHTAGS = ['かたてスト', '小学校版', 'TtLab', 'ととらぼ']
+export const SHARE_BRAND_HASHTAGS = ['かたてスト', '小学生版', 'TtLab', 'ととらぼ']
 export function buildShareText(pageUrl: string): string {
     const lines = [
-        'かたてスト -小学校版-',
+        'かたてスト -小学生版-',
         '都道府県・県庁所在地・地方・特産品を地図で楽しく4択クイズ',
         '',
         '▼Web版',
