@@ -37,7 +37,6 @@ export default function QuizScreen({
   const { r } = useResponsive()
   const isFirst = currentIndex === 0
   const isLast = currentIndex === questions.length - 1
-  const hasAnswered = answers[q.id] !== undefined
   const progressPct = ((currentIndex + 1) / questions.length) * 100
 
   return (
@@ -180,15 +179,14 @@ export default function QuizScreen({
             </button>
           )}
           <div style={{ flex: 1 }} />
+          {/* 未回答でも次へ／採点を押せる（インデックスのジャンプと挙動を揃える）。 */}
           {!isLast ? (
             <button
               onClick={onNext}
-              disabled={!hasAnswered}
               style={{
                 ...styles.primaryButton,
                 width: 'auto',
                 marginTop: 0,
-                ...(hasAnswered ? {} : styles.buttonDisabled),
               }}
             >
               <Furigana text={labels.quiz.next} />
@@ -196,12 +194,10 @@ export default function QuizScreen({
           ) : (
             <button
               onClick={onFinish}
-              disabled={!hasAnswered}
               style={{
                 ...styles.primaryButton,
                 width: 'auto',
                 marginTop: 0,
-                ...(hasAnswered ? {} : styles.buttonDisabled),
               }}
             >
               <Furigana text={labels.quiz.finish} />
